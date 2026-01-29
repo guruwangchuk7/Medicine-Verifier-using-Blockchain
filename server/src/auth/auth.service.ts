@@ -63,4 +63,30 @@ export class AuthService {
       }
     };
   }
+  async googleLogin(req: any) {
+    if (!req.user) {
+      return { message: 'No user from google' };
+    }
+
+    const { email, firstName, lastName } = req.user;
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // Create new user if not exists
+      const password = Math.random().toString(36).slice(-8); // Random password since they use Google
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name: `${firstName} ${lastName}`,
+          password: hashedPassword,
+          role: Role.CONSUMER, // Default role
+          orgName: 'Google User',
+        },
+      });
+    }
+
+    return this.generateToken(user);
+  }
 }

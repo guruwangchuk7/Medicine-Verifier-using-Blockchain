@@ -1,8 +1,24 @@
+"use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Activity, Box, AlertTriangle, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react"
 
 export default function DashboardPage() {
+    const [token, setToken] = useState<string | null>(null)
+
+    useEffect(() => {
+        // Check for token in URL (from Google Auth redirect)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToken = urlParams.get('token');
+
+        if (urlToken) {
+            localStorage.setItem('token', urlToken);
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
+
     return (
         <div className="flex flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
