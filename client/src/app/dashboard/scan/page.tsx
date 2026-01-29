@@ -6,6 +6,7 @@ import { Html5QrcodeScanner } from "html5-qrcode"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScanLine, PackageCheck, Loader2, MapPin } from "lucide-react"
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -18,29 +19,57 @@ export default function ScanShipmentPage() {
     useEffect(() => {
         if (data) return; // Stop scanning if we have data
 
-        const scanner = new Html5QrcodeScanner(
-            "shipment-reader",
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            false
-        );
+        // Small delay to ensure the DOM element exists
+        const timer = setTimeout(() => {
+            const scanner = new Html5QrcodeScanner(
+                "shipment-reader",
+                { fps: 5, qrbox: { width: 250, height: 250 } },
+                false
+            );
 
-        scanner.render((decodedText) => {
-            scanner.clear();
-            setData(decodedText.includes('/v/') ? decodedText.split('/v/')[1] : decodedText);
-        }, (err) => { });
+            scanner.render((decodedText) => {
+                scanner.clear();
+                setData(decodedText.includes('/v/') ? decodedText.split('/v/')[1] : decodedText);
+            }, (errorMessage) => {
+                // parse error, ignore it.
+            });
 
-        return () => {
-            scanner.clear().catch(e => console.error(e));
-        }
+            // Cleanup function for this specific instance
+            return () => {
+                scanner.clear().catch(e => console.error(e));
+            }
+        }, 100);
+
+        return () => clearTimeout(timer);
     }, [data]);
 
     const handleReceive = async () => {
         setIsProcessing(true);
-        // Simulate API call to backend to append 'RECEIVED' event to Blockchain
-        setTimeout(() => {
-            setIsProcessing(false);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/supply-chain/scan`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    batchId: data,
+                    location: "Central Warehouse, NY", // In real app, get this from user profile or input
+                    status: "RECEIVED_AT_DISTRIBUTOR"
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to log shipment");
+            }
+
             setSuccess(true);
-        }, 2000);
+            toast.success("Shipment logged successfully");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to log shipment");
+        } finally {
+            setIsProcessing(false);
+        }
     }
 
     const reset = () => {

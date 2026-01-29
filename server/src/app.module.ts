@@ -10,6 +10,7 @@ import { BlockchainModule } from './blockchain/blockchain.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuditMiddleware } from './common/audit.middleware';
+import { SupplyChainModule } from './supply-chain/supply-chain.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { AuditMiddleware } from './common/audit.middleware';
     AuthModule,
     BatchesModule,
     PrismaModule,
-    BlockchainModule
+    BlockchainModule,
+    SupplyChainModule
   ],
   controllers: [AppController],
   providers: [
