@@ -86,6 +86,22 @@ export function MobileSidebar() {
                         <Box className="h-5 w-5" />
                         My Batches
                     </Link>
+                    <Link href="/dashboard/scan" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <ScanLine className="h-5 w-5" />
+                        Scan Shipment
+                    </Link>
+                    <Link href="/dashboard/recall" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <AlertTriangle className="h-5 w-5" />
+                        Recall Action
+                    </Link>
+                    <Link href="/dashboard/reports" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <FileText className="h-5 w-5" />
+                        Reports
+                    </Link>
+                    <Link href="/dashboard/settings" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <Settings className="h-5 w-5" />
+                        Settings
+                    </Link>
                 </nav>
             </SheetContent>
         </Sheet>
