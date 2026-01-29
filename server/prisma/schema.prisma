@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CONSUMER
+  MANUFACTURER
+  DISTRIBUTOR
+  REGULATOR
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(CONSUMER)
+  name      String?
+  orgName   String?  // For businesses
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  batches   Batch[]            // For Manufacturers
+  events    SupplyChainEvent[] // For Dist/Pharm/Mfg
+}
+
+model Batch {
+  id          String   @id @default(uuid())
+  batchNumber String   @unique // The physical batch ID printed
+  productName String
+  strength    String?
+  quantity    Int
+  mfgDate     DateTime
+  expiryDate  DateTime
+  factoryLoc  String?
+  
+  manufacturerId String
+  manufacturer   User   @relation(fields: [manufacturerId], references: [id])
+
+  events    SupplyChainEvent[]
+  scanLogs  ScanLog[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  isRecalled Boolean @default(false)
+}
+
+model SupplyChainEvent {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  location  String
+  eventType String   // e.g., MANUFACTURED, SHIPPED, RECEIVED, SOLD
+  metadata  Json?    // Extra details specific to event
+
+  batchId   String
+  batch     Batch    @relation(fields: [batchId], references: [id])
+
+  handlerId String?
+  handler   User?    @relation(fields: [handlerId], references: [id])
+}
+
+model ScanLog {
+  id        String   @id @default(uuid())
+  scannedAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+  location  Json?    // Geo coordinates if allowed
+  
+  status    String   // VALID, SUSPICIOUS, INVALID, RECALLED
+
+  batchId   String?
+  batch     Batch?   @relation(fields: [batchId], references: [id])
+}
+
+model BlockchainBlock {
+  index        Int      @id @default(autoincrement())
+  timestamp    DateTime @default(now())
+  data         String
+  previousHash String
+  hash         String
+  nonce        Int      @default(0)
+  
+  batchId      String?
+  eventId      String?
+}

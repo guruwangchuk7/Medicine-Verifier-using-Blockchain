@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: medsure_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: medsure_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medsure_net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: medsure_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - medsure_net
+
+  server:
+    build: ./server
+    container_name: medsure_api
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://postgres:password123@postgres:5432/medsure_db?schema=public"
+      JWT_SECRET: "super_secret_jwt_key_change_me"
+      PORT: 3000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3001:3000" # Expose API on 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - medsure_net
+
+  client:
+    build: ./client
+    container_name: medsure_web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+    depends_on:
+      - server
+    networks:
+      - medsure_net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  medsure_net:
+    driver: bridge

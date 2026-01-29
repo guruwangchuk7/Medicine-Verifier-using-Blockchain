@@ -1,0 +1,93 @@
+
+import Link from "next/link"
+import { LayoutDashboard, Box, ScanLine, FileText, Settings, LogOut, Menu, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
+
+interface SidebarProps {
+    role?: string;
+}
+
+export function DashboardSidebar({ role = "Manufacturer" }: SidebarProps) {
+    const links = [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "My Batches", href: "/dashboard/batches", icon: Box },
+        { name: "Scan Shipment", href: "/dashboard/scan", icon: ScanLine },
+        { name: "Recall Action", href: "/dashboard/recall", icon: AlertTriangle },
+        { name: "Reports", href: "/dashboard/reports", icon: FileText },
+        { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    ]
+
+    return (
+        <div className="flex h-full flex-col border-r bg-white w-64 hidden md:flex">
+            <div className="flex h-16 items-center border-b px-6">
+                <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
+                    <ScanLine className="h-6 w-6" />
+                    <span>MedSure</span>
+                </Link>
+            </div>
+            <div className="flex-1 overflow-auto py-4">
+                <nav className="grid items-start px-4 text-sm font-medium">
+                    {links.map((link, index) => (
+                        <Link
+                            key={index}
+                            href={link.href}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                        >
+                            <link.icon className="h-4 w-4" />
+                            {link.name}
+                        </Link>
+                    ))}
+                </nav>
+            </div>
+            <div className="mt-auto p-4">
+                <Separator className="my-2" />
+                <div className="flex items-center gap-3 px-2 py-2">
+                    <Avatar>
+                        <AvatarImage src="" />
+                        <AvatarFallback>M</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">John Doe</span>
+                        <span className="text-xs text-muted-foreground">{role}</span>
+                    </div>
+                </div>
+                <Button variant="ghost" className="w-full justify-start mt-2 text-red-500 hover:text-red-600 hover:bg-red-50">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                </Button>
+            </div>
+        </div>
+    )
+}
+
+export function MobileSidebar() {
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden shrink-0">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+                <div className="flex items-center gap-2 font-bold text-xl text-primary mb-6">
+                    <ScanLine className="h-6 w-6" />
+                    <span>MedSure</span>
+                </div>
+                <nav className="grid gap-2 text-lg font-medium">
+                    <Link href="/dashboard" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <LayoutDashboard className="h-5 w-5" />
+                        Dashboard
+                    </Link>
+                    <Link href="/dashboard/batches" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <Box className="h-5 w-5" />
+                        My Batches
+                    </Link>
+                </nav>
+            </SheetContent>
+        </Sheet>
+    )
+}
