@@ -84,15 +84,15 @@ export default function ScanShipmentPage() {
                     <CardContent className="space-y-4">
                         <div className="grid gap-2">
                             <Label>Event Type</Label>
-                            <Input value="RECEIVED_AT_DISTRIBUTOR" disabled />
+                            <Input defaultValue="RECEIVED_AT_DISTRIBUTOR" disabled />
                         </div>
                         <div className="grid gap-2">
                             <Label>Location Name</Label>
-                            <Input value="Central Warehouse, NY" />
+                            <Input defaultValue="Central Warehouse, NY" />
                         </div>
                         <div className="grid gap-2">
                             <Label>Handler ID</Label>
-                            <Input value="USER-8291 (You)" disabled />
+                            <Input defaultValue="USER-8291 (You)" disabled />
                         </div>
 
                         {success && (
