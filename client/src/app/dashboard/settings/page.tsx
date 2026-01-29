@@ -6,8 +6,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
 
 export default function SettingsPage() {
+    const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null)
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token);
+                setUser({
+                    name: decoded.name || decoded.email.split('@')[0],
+                    email: decoded.email,
+                    role: decoded.role
+                });
+            } catch (e) {
+                console.error("Invalid token", e);
+            }
+        }
+    }, []);
+
     return (
         <div className="flex flex-col gap-6">
             <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
@@ -26,12 +46,12 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Organization Name</Label>
-                                <Input id="name" defaultValue="MedSure Mfg" />
+                                <Label htmlFor="name">Name / Organization</Label>
+                                <Input id="name" defaultValue={user?.name || "Loading..."} key={user?.name} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Contact Email</Label>
-                                <Input id="email" defaultValue="manufacturer@medsure.com" />
+                                <Input id="email" defaultValue={user?.email || "Loading..."} disabled />
                             </div>
                         </CardContent>
                         <CardFooter>

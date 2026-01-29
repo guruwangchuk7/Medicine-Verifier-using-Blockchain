@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ShieldCheck, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,9 +44,12 @@ export default function LoginPage() {
             localStorage.setItem("user", JSON.stringify(data.user))
 
             // Redirect to dashboard
+            toast.success("Login successful")
             router.push("/dashboard")
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Something went wrong")
+            const message = err instanceof Error ? err.message : "Something went wrong"
+            setError(message)
+            toast.error(message)
         } finally {
             setIsLoading(false)
         }
@@ -91,7 +95,7 @@ export default function LoginPage() {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
+                    <CardFooter className="flex flex-col gap-4 pt-4">
                         <Button className="w-full" type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Sign In

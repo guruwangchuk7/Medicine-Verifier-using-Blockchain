@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Activity, Box, AlertTriangle, CheckCircle } from "lucide-react"
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 
 export default function DashboardPage() {
     const [token, setToken] = useState<string | null>(null)
@@ -14,6 +15,7 @@ export default function DashboardPage() {
 
         if (urlToken) {
             localStorage.setItem('token', urlToken);
+            toast.success("Login successful")
             // Clean URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }

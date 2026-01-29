@@ -1,16 +1,54 @@
+"use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { LayoutDashboard, Box, ScanLine, FileText, Settings, LogOut, Menu, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
 
 interface SidebarProps {
     role?: string;
 }
 
 export function DashboardSidebar({ role = "Manufacturer" }: SidebarProps) {
+    const pathname = usePathname()
+    const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null)
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token);
+                // JWT payload: { email, sub, role, iat, exp }
+                // We might need to fetch full profile or trust if backend includes name. 
+                // Currently backend token payload is { email, sub, role }. 
+                // Let's rely on stored user object if available, or fall back to token.
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                } else {
+                    setUser({
+                        name: decoded.email.split('@')[0], // Fallback name
+                        email: decoded.email,
+                        role: decoded.role || role
+                    });
+                }
+            } catch (e) {
+                console.error("Invalid token", e);
+            }
+        }
+    }, [role]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+    }
+
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { name: "My Batches", href: "/dashboard/batches", icon: Box },
@@ -34,7 +72,7 @@ export function DashboardSidebar({ role = "Manufacturer" }: SidebarProps) {
                         <Link
                             key={index}
                             href={link.href}
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary hover:bg-muted ${pathname === link.href ? "bg-muted text-primary" : "text-muted-foreground"}`}
                         >
                             <link.icon className="h-4 w-4" />
                             {link.name}
@@ -47,14 +85,14 @@ export function DashboardSidebar({ role = "Manufacturer" }: SidebarProps) {
                 <div className="flex items-center gap-3 px-2 py-2">
                     <Avatar>
                         <AvatarImage src="" />
-                        <AvatarFallback>M</AvatarFallback>
+                        <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-medium">John Doe</span>
-                        <span className="text-xs text-muted-foreground">{role}</span>
+                    <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-medium truncate" title={user?.name}>{user?.name || "Guest"}</span>
+                        <span className="text-xs text-muted-foreground truncate" title={user?.role}>{user?.role || role}</span>
                     </div>
                 </div>
-                <Button variant="ghost" className="w-full justify-start mt-2 text-red-500 hover:text-red-600 hover:bg-red-50">
+                <Button variant="ghost" className="w-full justify-start mt-2 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                 </Button>
